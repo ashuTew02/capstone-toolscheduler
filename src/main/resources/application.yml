@@ -1,0 +1,25 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: toolscheduler
+  datasource:
+    url: jdbc:mysql://localhost:3306/toolschedulerdb
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  kafka:
+    # This is the standard Spring Boot property for bootstrap servers.
+    # You can also define custom properties if you like.
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: toolscheduler-consumer-group
+
+kafka:
+  topics:
+    scan-job: "scan-job"
+    scan-request: "scan-request"
