@@ -8,7 +8,6 @@ public class ScanJobEvent {
     // path to JSON file containing alerts
     private String scanFilePath;
 
-
     public ScanJobEvent(String type, String scanFilePath) {
         this.type = type;
         this.scanFilePath = scanFilePath;

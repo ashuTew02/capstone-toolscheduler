@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8083
 
 spring:
   application:
@@ -13,8 +13,6 @@ spring:
       ddl-auto: update
 
   kafka:
-    # This is the standard Spring Boot property for bootstrap servers.
-    # You can also define custom properties if you like.
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: toolscheduler-consumer-group
@@ -23,3 +21,12 @@ kafka:
   topics:
     scan-job: "scan-job"
     scan-request: "scan-request"
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: ERROR
+      springframework:
+        kafka: ERROR
+    kafka: ERROR

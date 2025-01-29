@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 
-
 @Entity
 @Table(name = "credential")
 @IdClass(Credential.CredentialId.class)
@@ -59,7 +58,6 @@ public class Credential {
     }
 
     public static class CredentialId implements Serializable {
-
         private String owner;
         private String repository;
 
