@@ -22,7 +22,7 @@ public class DummyScanEventProducer {
     }
 
     public void produceDummyEvent() {
-        ScanRequestEvent event = new ScanRequestEvent("ashuTew01", "juice-shop", Arrays.asList(ScanType.ALL));
+        ScanRequestEvent event = new ScanRequestEvent("ashuTew01", "juice-shop", Arrays.asList(ScanType.ALL), 1L);
         kafkaTemplate.send(scanRequestTopic, event);
         System.out.println("Dummy scanRequestEvent published to topic: " + scanRequestTopic);
     }

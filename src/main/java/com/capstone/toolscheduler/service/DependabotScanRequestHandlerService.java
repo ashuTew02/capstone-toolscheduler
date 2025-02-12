@@ -2,6 +2,7 @@ package com.capstone.toolscheduler.service;
 
 import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
 import com.capstone.toolscheduler.model.ScanType;
+import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
 import com.capstone.toolscheduler.utils.StoreJSONContentToFileSystemUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,13 +18,13 @@ public class DependabotScanRequestHandlerService implements ScanRequestHandlerSe
     private final WebClient.Builder webClientBuilder;
     private final ScanJobEventProducer scanJobEventProducer;
 
-    public DependabotScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanJobEventProducer scanJobEventProducer) {
+    public DependabotScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
         this.webClientBuilder = webClientBuilder;
         this.scanJobEventProducer = scanJobEventProducer;
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken) throws Exception {
+    public void handle(String owner, String repository, String personalAccessToken, String findingsEsIndex) throws Exception {
         String type = ScanType.DEPENDABOT.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
@@ -47,6 +48,6 @@ public class DependabotScanRequestHandlerService implements ScanRequestHandlerSe
         String finalData = objectMapper.writeValueAsString(totalAlerts);
         String directoryPath = ScanStoragePath.get(type, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(ScanType.DEPENDABOT, filePath);
+        scanJobEventProducer.produce(ScanType.DEPENDABOT, filePath, findingsEsIndex);
     }
 }

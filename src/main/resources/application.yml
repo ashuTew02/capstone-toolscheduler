@@ -5,7 +5,7 @@ spring:
   application:
     name: toolscheduler
   datasource:
-    url: jdbc:mysql://localhost:3306/toolschedulerdb
+    url: jdbc:mysql://localhost:3306/authdb
     username: root
     password: root
   jpa:

@@ -23,7 +23,7 @@ public class SecretScanRequestHandlerService implements ScanRequestHandlerServic
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken) throws Exception {
+    public void handle(String owner, String repository, String personalAccessToken, String findingsEsIndex) throws Exception {
         String type = ScanType.SECRET_SCAN.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
@@ -47,6 +47,6 @@ public class SecretScanRequestHandlerService implements ScanRequestHandlerServic
         String finalData = objectMapper.writeValueAsString(totalAlerts);
         String directoryPath = ScanStoragePath.get(type, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(ScanType.SECRET_SCAN, filePath);
+        scanJobEventProducer.produce(ScanType.SECRET_SCAN, filePath, findingsEsIndex);
     }
 }

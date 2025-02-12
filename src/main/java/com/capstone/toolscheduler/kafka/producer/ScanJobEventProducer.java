@@ -19,8 +19,8 @@ public class ScanJobEventProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void produce(ScanType scanType, String filePath) {
-        ScanJobEvent event = new ScanJobEvent(scanType.getValue(), filePath);
+    public void produce(ScanType scanType, String filePath, String esIndexOfFindings) {
+        ScanJobEvent event = new ScanJobEvent(scanType.getValue(), filePath, esIndexOfFindings);
         kafkaTemplate.send(scanJobEventTopic, event);
     }
 }
