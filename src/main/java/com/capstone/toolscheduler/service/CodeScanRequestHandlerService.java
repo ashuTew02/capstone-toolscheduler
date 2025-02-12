@@ -46,7 +46,7 @@ public class CodeScanRequestHandlerService implements ScanRequestHandlerService 
             page++;
         }
         String finalData = objectMapper.writeValueAsString(totalAlerts);
-        String directoryPath = ScanStoragePath.get(type, owner, repository);
+        String directoryPath = ScanStoragePath.get(type, findingsEsIndex, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
         scanJobEventProducer.produce(ScanType.CODE_SCAN, filePath, findingsEsIndex);
     }
