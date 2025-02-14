@@ -1,12 +1,13 @@
 package com.capstone.toolscheduler.service;
 
 import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
-import com.capstone.toolscheduler.model.ScanType;
+import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
 import com.capstone.toolscheduler.utils.StoreJSONContentToFileSystemUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ public class CodeScanRequestHandlerService implements ScanRequestHandlerService 
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken, String findingsEsIndex) throws Exception {
-        String type = ScanType.CODE_SCAN.getValue();
+    public void handle(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
+        String toolString = Tool.CODE_SCAN.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
         int page = 1;
@@ -46,8 +47,8 @@ public class CodeScanRequestHandlerService implements ScanRequestHandlerService 
             page++;
         }
         String finalData = objectMapper.writeValueAsString(totalAlerts);
-        String directoryPath = ScanStoragePath.get(type, findingsEsIndex, owner, repository);
+        String directoryPath = ScanStoragePath.get(toolString, tenantId, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(ScanType.CODE_SCAN, filePath, findingsEsIndex);
+        scanJobEventProducer.produce(Tool.CODE_SCAN, filePath, tenantId);
     }
 }

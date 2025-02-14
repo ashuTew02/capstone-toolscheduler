@@ -1,14 +1,13 @@
 package com.capstone.toolscheduler.kafka.consumer;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.capstone.toolscheduler.dto.event.ScanRequestEvent;
-import com.capstone.toolscheduler.model.ScanType;
+import com.capstone.toolscheduler.dto.event.ScanRequestJobEvent;
+import com.capstone.toolscheduler.dto.event.payload.ScanRequestJobEventPayload;
+import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.service.CodeScanRequestHandlerService;
 import com.capstone.toolscheduler.service.DependabotScanRequestHandlerService;
@@ -37,45 +36,31 @@ public class ScanRequestEventConsumer {
     @KafkaListener(topics = "${kafka.topics.scan-request:scan_request}",
             groupId = "${spring.kafka.consumer.group-id:toolscheduler-consumer-group}",
             containerFactory = "kafkaListenerContainerFactory")
-    public void onMessage(ScanRequestEvent scanRequestEvent) {
-        String owner = scanRequestEvent.getOwner();
-        String repository = scanRequestEvent.getRepository();
-        List<ScanType> scanTypes = scanRequestEvent.getScanTypes();
-        Long tenantId = scanRequestEvent.getTenantId();
-        LOGGER.info("Received scan requests for " + owner + "/" + repository);
+    public void onMessage(ScanRequestJobEvent scanRequestJobEvent) {
+        ScanRequestJobEventPayload scanRequestJobEventPayload = scanRequestJobEvent.getPayload();
+
+        String owner = scanRequestJobEventPayload.getOwner();
+        String repository = scanRequestJobEventPayload.getRepository();
+        Tool tool = scanRequestJobEventPayload.getTool();
+        Long tenantId = scanRequestJobEventPayload.getTenantId();
+        LOGGER.info("Received scan requests for " + "tenantId " + tenantId + " " + owner + "/" + repository);
         
         String personalAccessToken = tenantRepository.findPatByTenantId(tenantId);
-        String findingsEsIndex = tenantRepository.findEsIndexByTenantId(tenantId);
 
         try {
-            if(scanTypes.contains(ScanType.ALL)) {
-                codeScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-                dependabotScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-                secretScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-            } else {
-                for(ScanType scanType : scanTypes) {
-                    String scanTypeVal = scanType.getValue();
-                    // Boolean isUnknown = false;
-                    switch (scanTypeVal) {
-                        case "code-scan":
-                            codeScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-                            break;
-                        case "dependabot":
-                            dependabotScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-                            break;
-                        case "secret-scan":
-                            secretScanRequestHandlerService.handle(owner, repository, personalAccessToken, findingsEsIndex);
-                            break;
-                        default:
-                            LOGGER.error("Unknown scan type: " + scanTypeVal);
-                            // isUnknown = true;
-                            break;
-                    }
-                    // if(!isUnknown) {
-                    //     LOGGER.info("   Successfully processed " + scanTypeVal + " request for " + owner + "/" + repository);
-                    // }
-                }
-                // LOGGER.info("Successfully processed received scan requests for " + owner + "/" + repository);
+            switch (tool) {
+                case CODE_SCAN:
+                    codeScanRequestHandlerService.handle(owner, repository, personalAccessToken, tenantId);
+                    break;
+                case DEPENDABOT:
+                    dependabotScanRequestHandlerService.handle(owner, repository, personalAccessToken, tenantId);
+                    break;
+                case SECRET_SCAN:
+                    secretScanRequestHandlerService.handle(owner, repository, personalAccessToken, tenantId);
+                    break;
+                default:
+                    LOGGER.error("Unknown scan type: " + tool.getValue());
+                    break;
             }
         } catch (Exception e) {
             LOGGER.error("Error processing scan request", e);

@@ -4,8 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import com.capstone.toolscheduler.dto.event.ScanJobEvent;
-import com.capstone.toolscheduler.model.ScanType;
+import com.capstone.toolscheduler.dto.event.ScanParseJobEvent;
+import com.capstone.toolscheduler.dto.event.payload.ScanParseJobEventPayload;
+import com.capstone.toolscheduler.model.Tool;
 
 @Service
 public class ScanJobEventProducer {
@@ -19,8 +20,9 @@ public class ScanJobEventProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void produce(ScanType scanType, String filePath, String esIndexOfFindings) {
-        ScanJobEvent event = new ScanJobEvent(scanType.getValue(), filePath, esIndexOfFindings);
+    public void produce(Tool tool, String filePath, Long tenantId) {
+        ScanParseJobEventPayload payload = new ScanParseJobEventPayload(tool, tenantId, filePath);
+        ScanParseJobEvent event = new ScanParseJobEvent(payload);
         kafkaTemplate.send(scanJobEventTopic, event);
     }
 }

@@ -1,7 +1,6 @@
 package com.capstone.toolscheduler.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import jakarta.persistence.*;
 
 @Entity

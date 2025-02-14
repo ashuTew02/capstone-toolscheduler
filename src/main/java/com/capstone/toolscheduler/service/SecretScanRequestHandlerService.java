@@ -1,7 +1,7 @@
 package com.capstone.toolscheduler.service;
 
 import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
-import com.capstone.toolscheduler.model.ScanType;
+import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
 import com.capstone.toolscheduler.utils.StoreJSONContentToFileSystemUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,8 +23,8 @@ public class SecretScanRequestHandlerService implements ScanRequestHandlerServic
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken, String findingsEsIndex) throws Exception {
-        String type = ScanType.SECRET_SCAN.getValue();
+    public void handle(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
+        String tool = Tool.SECRET_SCAN.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
         int page = 1;
@@ -45,8 +45,8 @@ public class SecretScanRequestHandlerService implements ScanRequestHandlerServic
             page++;
         }
         String finalData = objectMapper.writeValueAsString(totalAlerts);
-        String directoryPath = ScanStoragePath.get(type, findingsEsIndex, owner, repository);
+        String directoryPath = ScanStoragePath.get(tool, tenantId, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(ScanType.SECRET_SCAN, filePath, findingsEsIndex);
+        scanJobEventProducer.produce(Tool.SECRET_SCAN, filePath, tenantId);
     }
 }

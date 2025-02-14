@@ -20,7 +20,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
-import com.capstone.toolscheduler.dto.event.ScanRequestEvent;
+import com.capstone.toolscheduler.dto.event.ScanRequestJobEvent;
 
 @EnableKafka
 @Configuration
@@ -44,17 +44,17 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, ScanRequestEvent> consumerFactory() {
+    public ConsumerFactory<String, ScanRequestJobEvent> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(
                 consumerConfigs(),
                 new StringDeserializer(),
-                new JsonDeserializer<>(ScanRequestEvent.class)
+                new JsonDeserializer<>(ScanRequestJobEvent.class)
         );
     }
 
     @Bean(name = "kafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, ScanRequestEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, ScanRequestEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, ScanRequestJobEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ScanRequestJobEvent> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
