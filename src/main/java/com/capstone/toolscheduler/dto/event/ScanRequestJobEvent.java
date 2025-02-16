@@ -8,6 +8,8 @@ import com.capstone.toolscheduler.model.EventType;
 public final class ScanRequestJobEvent implements Event<ScanRequestJobEventPayload> {
     private ScanRequestJobEventPayload payload;
     private String eventId;
+    private EventType type = EventType.SCAN_REQUEST_JOB;
+
 
     public ScanRequestJobEvent(ScanRequestJobEventPayload payload) {
         this.eventId = UUID.randomUUID().toString();
@@ -20,7 +22,7 @@ public final class ScanRequestJobEvent implements Event<ScanRequestJobEventPaylo
 
     @Override
     public EventType getType() {
-        return EventType.SCAN_REQUEST_JOB;
+        return type;
     }
 
     @Override

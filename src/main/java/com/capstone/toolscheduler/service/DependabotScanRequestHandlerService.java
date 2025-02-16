@@ -1,6 +1,6 @@
 package com.capstone.toolscheduler.service;
 
-import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
+import com.capstone.toolscheduler.kafka.producer.ScanParseJobEventProducer;
 import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
@@ -16,15 +16,15 @@ import java.util.Map;
 @Service
 public class DependabotScanRequestHandlerService implements ScanRequestHandlerService {
     private final WebClient.Builder webClientBuilder;
-    private final ScanJobEventProducer scanJobEventProducer;
+    private final ScanParseJobEventProducer scanJobEventProducer;
 
-    public DependabotScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
+    public DependabotScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanParseJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
         this.webClientBuilder = webClientBuilder;
         this.scanJobEventProducer = scanJobEventProducer;
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
+    public String handleAndReturnFilePath(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
         String tool = Tool.DEPENDABOT.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
@@ -48,6 +48,7 @@ public class DependabotScanRequestHandlerService implements ScanRequestHandlerSe
         String finalData = objectMapper.writeValueAsString(totalAlerts);
         String directoryPath = ScanStoragePath.get(tool, tenantId, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(Tool.DEPENDABOT, filePath, tenantId);
+        return filePath;
+        // scanJobEventProducer.produce(Tool.DEPENDABOT, filePath, tenantId);
     }
 }

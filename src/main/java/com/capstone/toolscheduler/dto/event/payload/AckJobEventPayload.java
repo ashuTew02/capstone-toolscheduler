@@ -2,13 +2,13 @@ package com.capstone.toolscheduler.dto.event.payload;
 
 import com.capstone.toolscheduler.model.JobStatus;
 
-public class AckScanParseJobEventPayload {
+public class AckJobEventPayload {
     private String jobId;
     private JobStatus jobStatus;
 
-    public AckScanParseJobEventPayload() {}
+    public AckJobEventPayload() {}
 
-    public AckScanParseJobEventPayload(String jobId, JobStatus jobStatus) {
+    public AckJobEventPayload(String jobId, JobStatus jobStatus) {
         this.jobId = jobId;
         this.jobStatus = jobStatus;
     }

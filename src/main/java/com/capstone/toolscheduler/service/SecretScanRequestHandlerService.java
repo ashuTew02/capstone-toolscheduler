@@ -1,6 +1,6 @@
 package com.capstone.toolscheduler.service;
 
-import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
+import com.capstone.toolscheduler.kafka.producer.ScanParseJobEventProducer;
 import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
 import com.capstone.toolscheduler.utils.StoreJSONContentToFileSystemUtil;
@@ -15,15 +15,15 @@ import java.util.Map;
 @Service
 public class SecretScanRequestHandlerService implements ScanRequestHandlerService {
     private final WebClient.Builder webClientBuilder;
-    private final ScanJobEventProducer scanJobEventProducer;
+    private final ScanParseJobEventProducer scanJobEventProducer;
 
-    public SecretScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanJobEventProducer scanJobEventProducer) {
+    public SecretScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanParseJobEventProducer scanJobEventProducer) {
         this.webClientBuilder = webClientBuilder;
         this.scanJobEventProducer = scanJobEventProducer;
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
+    public String handleAndReturnFilePath(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
         String tool = Tool.SECRET_SCAN.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
@@ -47,6 +47,7 @@ public class SecretScanRequestHandlerService implements ScanRequestHandlerServic
         String finalData = objectMapper.writeValueAsString(totalAlerts);
         String directoryPath = ScanStoragePath.get(tool, tenantId, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(Tool.SECRET_SCAN, filePath, tenantId);
+        return filePath;
+        // scanJobEventProducer.produce(Tool.SECRET_SCAN, filePath, tenantId);
     }
 }

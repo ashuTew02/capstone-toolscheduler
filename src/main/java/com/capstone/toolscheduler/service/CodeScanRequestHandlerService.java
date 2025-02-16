@@ -1,6 +1,6 @@
 package com.capstone.toolscheduler.service;
 
-import com.capstone.toolscheduler.kafka.producer.ScanJobEventProducer;
+import com.capstone.toolscheduler.kafka.producer.ScanParseJobEventProducer;
 import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
@@ -17,15 +17,15 @@ import java.util.Map;
 @Service
 public class CodeScanRequestHandlerService implements ScanRequestHandlerService {
     private final WebClient.Builder webClientBuilder;
-    private final ScanJobEventProducer scanJobEventProducer;
+    private final ScanParseJobEventProducer scanJobEventProducer;
 
-    public CodeScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
+    public CodeScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanParseJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
         this.webClientBuilder = webClientBuilder;
         this.scanJobEventProducer = scanJobEventProducer;
     }
 
     @Override
-    public void handle(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
+    public String handleAndReturnFilePath(String owner, String repository, String personalAccessToken, Long tenantId) throws Exception {
         String toolString = Tool.CODE_SCAN.getValue();
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> totalAlerts = new ArrayList<>();
@@ -49,6 +49,7 @@ public class CodeScanRequestHandlerService implements ScanRequestHandlerService 
         String finalData = objectMapper.writeValueAsString(totalAlerts);
         String directoryPath = ScanStoragePath.get(toolString, tenantId, owner, repository);
         String filePath = StoreJSONContentToFileSystemUtil.storeFile(directoryPath, finalData);
-        scanJobEventProducer.produce(Tool.CODE_SCAN, filePath, tenantId);
+        return filePath;
+        // scanJobEventProducer.produce(Tool.CODE_SCAN, filePath, tenantId);
     }
 }
