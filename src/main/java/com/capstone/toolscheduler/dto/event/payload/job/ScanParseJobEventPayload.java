@@ -1,17 +1,35 @@
-package com.capstone.toolscheduler.dto.event.payload;
+package com.capstone.toolscheduler.dto.event.payload.job;
 
+import com.capstone.toolscheduler.dto.event.payload.ScanParseEventPayload;
 import com.capstone.toolscheduler.model.Tool;
 
 public class ScanParseJobEventPayload {
     Tool tool;
     Long tenantId;
     String scanFilePath;
+    Long jobId;
 
-    public ScanParseJobEventPayload(Tool tool, Long tenantId, String scanFilePath) {
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public ScanParseJobEventPayload(Tool tool, Long tenantId, String scanFilePath, Long jobId) {
         this.tool = tool;
         this.tenantId = tenantId;
         this.scanFilePath = scanFilePath;
+        this.jobId = jobId;
     }
+    public ScanParseJobEventPayload(Long jobId, ScanParseEventPayload payload) {
+        this.jobId = jobId;
+        this.tool = payload.getTool();
+        this.tenantId = payload.getTenantId();
+        this.scanFilePath = payload.getScanFilePath();
+    }
+
 
     public ScanParseJobEventPayload() {
     }

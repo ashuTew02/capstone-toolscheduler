@@ -21,16 +21,16 @@ public class AckScanRequestJobEventProducer {
         this.objectMapper = objectMapper;
     }
 
-    public void produce(String jobId) {
+    public void produce(Long jobId, JobStatus status) {
         try {
             // Mark job as SUCCESS or IN_PROGRESS, etc. For now, let's do SUCCESS.
-            AckJobEventPayload payload = new AckJobEventPayload(jobId, JobStatus.SUCCESS);
+            AckJobEventPayload payload = new AckJobEventPayload(jobId, status);
             AckScanRequestJobEvent ackEvent = new AckScanRequestJobEvent(payload);
 
             String json = objectMapper.writeValueAsString(ackEvent);
 
             kafkaTemplate.send(KafkaTopic.ACK_JOB.getTopicName(),
-                               jobId,
+                               ackEvent.getEventId(),
                                json);
         } catch (JsonProcessingException e) {
             e.printStackTrace();

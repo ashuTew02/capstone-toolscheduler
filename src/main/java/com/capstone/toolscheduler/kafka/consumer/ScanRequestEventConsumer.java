@@ -3,22 +3,19 @@ package com.capstone.toolscheduler.kafka.consumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.capstone.toolscheduler.dto.event.Event;
-import com.capstone.toolscheduler.dto.event.ScanRequestJobEvent;
-import com.capstone.toolscheduler.dto.event.payload.ScanRequestJobEventPayload;
-import com.capstone.toolscheduler.model.EventType;
-import com.capstone.toolscheduler.model.KafkaTopic;
+import com.capstone.toolscheduler.dto.event.job.ScanRequestJobEvent;
+import com.capstone.toolscheduler.dto.event.payload.job.ScanRequestJobEventPayload;
+import com.capstone.toolscheduler.model.JobStatus;
 import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.service.CodeScanRequestHandlerService;
 import com.capstone.toolscheduler.service.DependabotScanRequestHandlerService;
 import com.capstone.toolscheduler.service.SecretScanRequestHandlerService;
 import com.capstone.toolscheduler.kafka.producer.AckScanRequestJobEventProducer;
-import com.capstone.toolscheduler.kafka.producer.ScanParseJobEventProducer;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.capstone.toolscheduler.kafka.producer.ScanParseEventProducer;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +33,7 @@ public class ScanRequestEventConsumer {
 
     // Inject new producers for ack & parse job
     private final AckScanRequestJobEventProducer ackProducer;
-    private final ScanParseJobEventProducer parseJobProducer;
+    private final ScanParseEventProducer parseJobProducer;
 
     public ScanRequestEventConsumer(
             CodeScanRequestHandlerService codeScanRequestHandlerService,
@@ -45,7 +42,7 @@ public class ScanRequestEventConsumer {
             TenantRepository tenantRepository,
             ObjectMapper objectMapper,
             AckScanRequestJobEventProducer ackProducer,
-            ScanParseJobEventProducer parseJobProducer
+            ScanParseEventProducer parseJobProducer
     ) {
         this.codeScanRequestHandlerService = codeScanRequestHandlerService;
         this.dependabotScanRequestHandlerService = dependabotScanRequestHandlerService;
@@ -62,6 +59,7 @@ public class ScanRequestEventConsumer {
         containerFactory = "kafkaListenerContainerFactory"
     )
     public void onMessage(String rawJson) {
+        Long wholeJobId = null;
         try {
             if(!rawJson.contains("\"SCAN_REQUEST_JOB\"")) {
                 return;
@@ -72,7 +70,7 @@ public class ScanRequestEventConsumer {
                 objectMapper.readValue(rawJson, ScanRequestJobEvent.class);
 
             ScanRequestJobEventPayload payload = scanRequestJobEvent.getPayload();
-
+            wholeJobId = payload.getJobId();
             String owner = payload.getOwner();
             String repository = payload.getRepository();
             Tool tool = payload.getTool();
@@ -102,7 +100,7 @@ public class ScanRequestEventConsumer {
             // String rawResultsFilePath = "/tmp/raw_findings_" + scanRequestJobEvent.getEventId() + ".json";
 
             // 2) Produce ACK to JFC
-            ackProducer.produce(scanRequestJobEvent.getEventId());
+            ackProducer.produce(payload.getJobId(), JobStatus.SUCCESS);
             System.out.println("4. TS processes ScanRequestJob, send ACK to JFC. id: " + scanRequestJobEvent.getEventId());
             // 3) Produce a new parse job event to JFC
             parseJobProducer.produce(tool, filePath, tenantId);
@@ -111,6 +109,9 @@ public class ScanRequestEventConsumer {
 
         } catch (Exception e) {
             LOGGER.error("Error deserializing or processing scan request", e);
+            if(wholeJobId != null) {
+                ackProducer.produce(wholeJobId, JobStatus.FAILURE);
+            }
         }
     }
 }

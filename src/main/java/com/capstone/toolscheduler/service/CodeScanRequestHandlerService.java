@@ -1,6 +1,5 @@
 package com.capstone.toolscheduler.service;
 
-import com.capstone.toolscheduler.kafka.producer.ScanParseJobEventProducer;
 import com.capstone.toolscheduler.model.Tool;
 import com.capstone.toolscheduler.repository.TenantRepository;
 import com.capstone.toolscheduler.utils.ScanStoragePath;
@@ -17,11 +16,9 @@ import java.util.Map;
 @Service
 public class CodeScanRequestHandlerService implements ScanRequestHandlerService {
     private final WebClient.Builder webClientBuilder;
-    private final ScanParseJobEventProducer scanJobEventProducer;
 
-    public CodeScanRequestHandlerService(WebClient.Builder webClientBuilder, ScanParseJobEventProducer scanJobEventProducer, TenantRepository tenantRepository) {
+    public CodeScanRequestHandlerService(WebClient.Builder webClientBuilder, TenantRepository tenantRepository) {
         this.webClientBuilder = webClientBuilder;
-        this.scanJobEventProducer = scanJobEventProducer;
     }
 
     @Override

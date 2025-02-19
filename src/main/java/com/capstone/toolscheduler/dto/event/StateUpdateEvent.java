@@ -2,23 +2,25 @@ package com.capstone.toolscheduler.dto.event;
 
 import java.util.UUID;
 
-import com.capstone.toolscheduler.dto.event.payload.ScanRequestJobEventPayload;
+import com.capstone.toolscheduler.dto.event.payload.StateUpdateEventPayload;
 import com.capstone.toolscheduler.model.EventType;
 
-public final class ScanRequestJobEvent implements Event<ScanRequestJobEventPayload> {
-    private ScanRequestJobEventPayload payload;
+public final class StateUpdateEvent implements Event<StateUpdateEventPayload> {
+    private StateUpdateEventPayload payload;
     private String eventId;
-    private EventType type = EventType.SCAN_REQUEST_JOB;
+    private EventType type = EventType.STATE_UPDATE;
 
 
-    public ScanRequestJobEvent(ScanRequestJobEventPayload payload) {
+    public StateUpdateEvent(StateUpdateEventPayload payload) {
         this.eventId = UUID.randomUUID().toString();
         this.payload = payload;
     }
 
-    public ScanRequestJobEvent() {
+    
+    public StateUpdateEvent() {
         this.eventId = UUID.randomUUID().toString();
     }
+
 
     @Override
     public EventType getType() {
@@ -26,7 +28,7 @@ public final class ScanRequestJobEvent implements Event<ScanRequestJobEventPaylo
     }
 
     @Override
-    public ScanRequestJobEventPayload getPayload() {
+    public StateUpdateEventPayload getPayload() {
         return payload;
     }
 
